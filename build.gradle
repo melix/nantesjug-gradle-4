@@ -48,6 +48,11 @@ asciidoctorj {
 apply from: 'gradle/pdf.gradle'
 
 task download {
+    description "Download extra deckjs/reveal.js resources"
+    inputs.property 'asciidoctorBackendVersion', asciidoctorBackendVersion
+    inputs.property 'revealjsVersion', revealjsVersion
+    outputs.dir templateDir
+    outputs.dir revealJsDir
     doLast {
         mkdir downloadDir
         mkdir templateDir
@@ -62,23 +67,19 @@ task download {
 
 task copyTheme(type: Copy) {
     dependsOn download
-    from fileTree("$revealJsDir/reveal.js-${revealjsVersion}")
-    into revealJsDir
-    from fileTree('src/docs/theme')
-    into file("$revealJsDir/css/theme")
+    destinationDir = file("$buildDir/asciidoc")
+    
+    into ("revealjs/reveal.js") {
+       from fileTree("$revealJsDir/reveal.js-${revealjsVersion}")
+    }
+    into("revealjs/reveal.js/css/theme") {
+       from fileTree('src/docs/theme')
+    }
 }
 
 task copyScreencasts(type: Copy) {
     from fileTree('src/docs/asciidoc/screencast')
     into file("$buildDir/asciidoc/revealjs")
-}
-
-download {
-    description "Download extra deckjs/reveal.js resources"
-    inputs.property 'asciidoctorBackendVersion', asciidoctorBackendVersion
-    inputs.property 'revealjsVersion', revealjsVersion
-    outputs.dir templateDir
-    outputs.dir revealJsDir
 }
 
 apply from: 'gradle/asciidoctor.gradle'
